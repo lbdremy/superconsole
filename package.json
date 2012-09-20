@@ -1,8 +1,8 @@
 {
-    "name": "console-trace"
-  , "version": "0.2.1"
-  , "description": "Adds a handy `trace` flag to the console object to prepend the file and line number"
-  , "main": "./console-trace"
+    "name": "superconsole"
+  , "version": "0.1.0"
+  , "description": "Prepends handies informations before your logs as you wish.(timestamp, callsite, loglevel)"
+  , "main": "./superconsole"
   , "dependencies": {
       "callsite": "*"
     }
