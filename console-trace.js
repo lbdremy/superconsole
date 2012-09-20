@@ -6,9 +6,9 @@
 var callsite = require('callsite')
   , tty = require('tty')
   , isatty = Boolean(tty.isatty() && process.stdout.getWindowSize)
-  , defaultColors = { log: '90', error: '91', warn: '93', info: '96', trace: '90' , debug : '89' }
-  , severityLevels = { debug : 7, info : 6, log : 5, warn : 4, error : 3 , trace : 2}
-  , consoleMethods = ['debug' , 'info', 'log', 'warn', 'error', 'trace'];
+  , defaultColors = { log: '90', error: '91', warn: '93', info: '96' , debug : '99' }
+  , severityLevels = { debug : 7, info : 6, log : 5, warn : 4, error : 3}
+  , consoleMethods = ['debug' , 'info', 'log', 'warn', 'error'];
 
 console.traceOptions = Object.create(null);
 console.traceOptions.cwd = process.cwd() + '/';
@@ -44,44 +44,53 @@ module.exports = function (options) {
       var dunotLog = console.traceOptions.logLevel 
         && severityLevels[name] > severityLevels[console.traceOptions.logLevel];
       if(dunotLog) return;
+      var head = '';
+      if(console.traceOptions.timestamp) head += console.timestampFormat();
+      if(console.traceOptions.printLevel) head += console.levelFormat(name);
       if (console._trace || console.traceOptions.always) {
         if (Buffer.isBuffer(arguments[0])) {
           arguments[0] = arguments[0].inspect()
+        } else if (arguments[0] instanceof Error){
+          if(arguments[0].stack) arguments[0] = arguments[0].stack;
         } else if (typeof arguments[0] === 'object') {
           arguments[0] = JSON.stringify(arguments[0], null, '  ');
         }
         var pad = (arguments[0] && !console.traceOptions.right || !isatty ? ' ' : '');
-        arguments[0] = console.traceFormat(__stack[1], name) + pad + arguments[0];
+        head += console.traceFormat(__stack[1], name);
+        arguments[0] = pad + arguments[0];
       }
+      if(isatty) head = console.attyFormat(head,name);
+      arguments[0] = head + arguments[0]; 
       console._trace = false;
       return fn.apply(this, arguments);
     }
   });
 
+console.traceFormat = function (call, method) {
+  var basename = call.getFileName().replace(console.traceOptions.cwd, '');
+  return '[' + basename + ':' + call.getLineNumber() + ']';
+}
+
+console.timestampFormat = function(){
+  return '[' +  new Date().toISOString() + ']';
+}
+
+console.levelFormat = function(method){
+  return '[' + method.toUpperCase() + ']';
+}
+
 /**
- * Overridable formatting function.
+ * Format the given `str` for the atty
+ * 
+ * @param {String} str -
+ * @param {String} method - the method given determinate the color used based on the mapping in `defaultColors`
  *
- * @param {CallSite}
- * @param {String} calling method
+ * @return {String}
  * @api public
  */
 
-console.traceFormat = function (call, method) {
-  var basename = call.getFileName().replace(console.traceOptions.cwd, '')
-    , level = '[' + method.toUpperCase() + ']'
-    , timestamp = '[' +  new Date().toISOString() + ']'
-    , place = '[' + basename + ':' + call.getLineNumber() + ']'
-    , color = '99',
-    str = '';
-
-  str += console.traceOptions.printLevel ? level : '';
-  str += console.traceOptions.timestamp ? timestamp : '';
-  str += place;
-
-  if (!isatty) {
-    return str;
-  }
-
+console.attyFormat = function(str,method){
+  var color = '99';
   if (console.traceOptions.colors !== false) {
     if (console.traceOptions.colors === undefined || console.traceOptions.colors[method] === undefined) {
       color = defaultColors[method];

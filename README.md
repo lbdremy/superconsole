@@ -25,9 +25,8 @@ require('console-trace')([options])
 * __colors__ - (`Boolean|Object`: defaults to true) terminal colors support flag or a custom color object
 * __right__ - (`Boolean`: defaults to false) callsite alignment flag, when true prints infos on the right
 * __logLevel__ - (`String` : defaults to "debug") call to console[logLevel] under logLevel will be skipped
-* __printLevel__ - (`Boolean` : defaults to false) prepend the log level to the log, only print when the callsite is.
-* __timestamp__ - (`Boolean` : defaults to false) prepend the ISO Date to the log, only print when the callsite is.
-
+* __printLevel__ - (`Boolean` : defaults to false) prepend the log level to the log
+* __timestamp__ - (`Boolean` : defaults to false) prepend the ISO Date to the log
 ### Examples:
 
 ```javascript
