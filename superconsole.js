@@ -3,7 +3,7 @@
  * Module dependencies.
  */
 
-var callsite = require('callsite')
+var stack = require('callsite')
   , tty = require('tty')
   , isatty = Boolean(tty.isatty() && process.stdout.getWindowSize)
   , defaultColors = { log: '90', error: '91', warn: '93', info: '96' , debug : '99' }
@@ -28,7 +28,7 @@ module.exports = function (options) {
   if (options) {
     options.cwd = options.cwd || console.traceOptions.cwd;
     console.traceOptions = options;
-  } 
+  }
 }
 
 
@@ -42,7 +42,7 @@ module.exports = function (options) {
     if(name == 'debug') fn = console.log;
 
     console[name] = function () {
-      var dunotLog = console.traceOptions.logLevel 
+      var dunotLog = console.traceOptions.logLevel
         && severityLevels[name] > severityLevels[console.traceOptions.logLevel];
       if(dunotLog) return;
       var head = '';
@@ -57,11 +57,11 @@ module.exports = function (options) {
           arguments[0] = JSON.stringify(arguments[0], null, '  ');
         }
         var pad = (arguments[0] && !console.traceOptions.right || !isatty ? ' ' : '');
-        head += console.callsiteFormat(__stack[1], name);
+        head += console.callsiteFormat(stack()[1], name);
         arguments[0] = pad + arguments[0];
       }
       if(isatty) head = console.attyFormat(head,name);
-      arguments[0] = head + arguments[0]; 
+      arguments[0] = head + arguments[0];
       console._trace = false;
       return fn.apply(this, arguments);
     }
@@ -82,7 +82,7 @@ console.levelFormat = function(method){
 
 /**
  * Format the given `str` for the atty
- * 
+ *
  * @param {String} str -
  * @param {String} method - the method given determinate the color used based on the mapping in `defaultColors`
  *
