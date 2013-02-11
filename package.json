@@ -4,6 +4,6 @@
   , "description": "Prepends handies informations before your logs as you wish.(timestamp, callsite, loglevel)"
   , "main": "./superconsole"
   , "dependencies": {
-      "callsite": "*"
+      "callsite": "~1.0.0"
     }
 }
