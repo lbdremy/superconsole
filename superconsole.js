@@ -57,7 +57,8 @@ module.exports = function (options) {
           arguments[0] = JSON.stringify(arguments[0], null, '  ');
         }
         var pad = (arguments[0] && !console.traceOptions.right || !isatty ? ' ' : '');
-        head += console.callsiteFormat(stack()[1], name);
+        var _stack = stack();
+        if (_stack[1]) head += console.callsiteFormat(_stack[1], name);
         arguments[0] = pad + arguments[0];
       }
       if(isatty) head = console.attyFormat(head,name);
