@@ -7,8 +7,8 @@ var stack = require('callsite')
   , tty = require('tty')
   , isatty = Boolean(tty.isatty() && process.stdout.getWindowSize)
   , defaultColors = { log: '90', error: '91', warn: '93', info: '96' , debug : '99' }
-  , severityLevels = { debug : 7, info : 6, log : 5, warn : 4, error : 3}
-  , consoleMethods = ['debug' , 'info', 'log', 'warn', 'error'];
+  , severityLevels = { debug : 7, log : 6, info : 5, warn : 4, error : 3}
+  , consoleMethods = ['debug' , 'log', 'info', 'warn', 'error'];
 
 console.traceOptions = Object.create(null);
 console.traceOptions.cwd = process.cwd() + '/';
