@@ -5,6 +5,7 @@
 
 var stack = require('callsite')
   , tty = require('tty')
+  , util = require('util')
   , isatty = Boolean(tty.isatty() && process.stdout.getWindowSize)
   , defaultColors = { log: '90', error: '91', warn: '93', info: '96' , debug : '99' }
   , severityLevels = { debug : 7, log : 6, info : 5, warn : 4, error : 3}
@@ -31,7 +32,6 @@ module.exports = function (options) {
   }
 }
 
-
 /**
  * Overrides the console methods.
  */
@@ -54,7 +54,7 @@ module.exports = function (options) {
         } else if (arguments[0] instanceof Error){
           if(arguments[0].stack) arguments[0] = arguments[0].stack;
         } else if (typeof arguments[0] === 'object') {
-          arguments[0] = JSON.stringify(arguments[0], null, '  ');
+          arguments[0] = util.inspect(arguments[0]);
         }
         var pad = (arguments[0] && !console.traceOptions.right || !isatty ? ' ' : '');
         var _stack = stack();

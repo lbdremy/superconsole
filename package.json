@@ -1,9 +1,9 @@
 {
-    "name": "superconsole"
-  , "version": "1.0.0"
-  , "description": "Prepends handies informations before your logs as you wish.(timestamp, callsite, loglevel)"
-  , "main": "./superconsole"
-  , "dependencies": {
-      "callsite": "~1.0.0"
+    "name": "superconsole",
+    "version": "1.0.1",
+    "description": "Prepends handies informations before your logs as you wish.(timestamp, callsite, loglevel)",
+    "main": "./superconsole",
+    "dependencies": {
+        "callsite": "~1.0.0"
     }
 }

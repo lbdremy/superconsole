@@ -90,6 +90,20 @@ consoleMethods.forEach(function (name) {
 });
 
 require('./superconsole')({
+  callsite : true,
+  level : false,
+  timestamp : false
+});
+
+consoleMethods.forEach(function (name) {
+  process.stdout.write(' ');
+  var circular = {};
+  circular.circular = circular;
+  console[name]('this is a colored traced console.%s with callsite info only and circular object', name);
+  console[name](circular);
+});
+
+require('./superconsole')({
   callsite : false,
   level : false,
   timestamp : true
