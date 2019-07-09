@@ -1,127 +1,98 @@
+const stack = require('callsite');
+const util = require('util');
+
+const consoleMethods = ['debug', 'log', 'info', 'warn', 'error'];
+const severityLevels = { debug: 7, log: 6, info: 5, warn: 4, error: 3 };
+
+console.traceOptions = {
+  callsite: false,
+  cwd: `${process.cwd()}/`,
+  json: false,
+  level: false,
+  timestamp: false
+};
 
 /**
- * Module dependencies.
+ * Overrides console methods.
  */
+consoleMethods.forEach(function(name) {
+  // debug is not a native method
+  const fn = name === 'debug' ? console.log : console[name];
 
-var stack = require('callsite')
-  , tty = require('tty')
-  , isatty = Boolean(tty.isatty() && process.stdout.getWindowSize)
-  , defaultColors = { log: '90', error: '91', warn: '93', info: '96' , debug : '99' }
-  , severityLevels = { debug : 7, log : 6, info : 5, warn : 4, error : 3}
-  , consoleMethods = ['debug' , 'log', 'info', 'warn', 'error'];
+  console[name] = function() {
+    const shouldNotLog =
+      console.traceOptions.logLevel &&
+      severityLevels[name] > severityLevels[console.traceOptions.logLevel];
+    if (shouldNotLog) return;
 
-console.traceOptions = Object.create(null);
-console.traceOptions.cwd = process.cwd() + '/';
-console.traceOptions.colors = true;
-console.traceOptions.timestamp = false;
-console.traceOptions.level = false;
-console.traceOptions.callsite = false;
-
-/**
- * Store custom options
- *
- * @param {Object} options
- * @api public
- */
-
-module.exports = function (options) {
-  if (options) {
-    options.cwd = options.cwd || console.traceOptions.cwd;
-    console.traceOptions = options;
-  }
-}
-
-
-/**
- * Overrides the console methods.
- */
-
-  consoleMethods.forEach(function (name) {
-    var fn = console[name];
-    // debug is not a native method
-    if(name == 'debug') fn = console.log;
-
-    console[name] = function () {
-      var dunotLog = console.traceOptions.logLevel
-        && severityLevels[name] > severityLevels[console.traceOptions.logLevel];
-      if(dunotLog) return;
-      var head = '';
-      if(console.traceOptions.timestamp) head += console.timestampFormat();
-      if(console.traceOptions.level) head += console.levelFormat(name);
-      if (console._trace || console.traceOptions.callsite) {
-        if (Buffer.isBuffer(arguments[0])) {
-          arguments[0] = arguments[0].inspect()
-        } else if (arguments[0] instanceof Error){
-          if(arguments[0].stack) arguments[0] = arguments[0].stack;
-        } else if (typeof arguments[0] === 'object') {
-          arguments[0] = JSON.stringify(arguments[0], null, '  ');
-        }
-        var pad = (arguments[0] && !console.traceOptions.right || !isatty ? ' ' : '');
-        var _stack = stack();
-        if (_stack[1]) head += console.callsiteFormat(_stack[1], name);
-        arguments[0] = pad + arguments[0];
+    const toLog = {};
+    if (console.traceOptions.timestamp) {
+      toLog.timestamp = new Date().toISOString();
+    }
+    if (console.traceOptions.level) {
+      toLog.level = name.toUpperCase();
+    }
+    if (console._trace || console.traceOptions.callsite) {
+      if (Buffer.isBuffer(arguments[0])) {
+        toLog.callsite = arguments[0].inspect();
+      } else if (arguments[0] instanceof Error) {
+        if (arguments[0].stack) toLog.callsite = arguments[0].stack;
+      } else if (typeof arguments[0] === 'object') {
+        toLog.callsite = arguments[0];
       }
-      if(isatty) head = console.attyFormat(head,name);
-      arguments[0] = head + arguments[0];
-      console._trace = false;
-      return fn.apply(this, arguments);
+      const _stack = stack();
+      const call = _stack[1];
+      if (call) {
+        const file = call.getFileName().replace(console.traceOptions.cwd, '');
+        toLog.callsite = `${file}:${call.getLineNumber()}`;
+      }
     }
-  });
-
-console.callsiteFormat = function (call, method) {
-  var basename = call.getFileName().replace(console.traceOptions.cwd, '');
-  return '[' + basename + ':' + call.getLineNumber() + ']';
-}
-
-console.timestampFormat = function(){
-  return '[' +  new Date().toISOString() + ']';
-}
-
-console.levelFormat = function(method){
-  return '[' + method.toUpperCase() + ']';
-}
-
-/**
- * Format the given `str` for the atty
- *
- * @param {String} str -
- * @param {String} method - the method given determinate the color used based on the mapping in `defaultColors`
- *
- * @return {String}
- * @api public
- */
-
-console.attyFormat = function(str,method){
-  var color = '99';
-  if (console.traceOptions.colors !== false) {
-    if (console.traceOptions.colors === undefined || console.traceOptions.colors[method] === undefined) {
-      color = defaultColors[method];
-    } else {
-      color = console.traceOptions.colors[method];
+    const messages = [];
+    while (arguments.length) {
+      messages.push([].shift.call(arguments));
     }
-  }
-  if (console.traceOptions.right) {
-    var rowWidth = process.stdout.getWindowSize()[0];
-    return '\033[s' + // save current position
-           '\033[' + rowWidth + 'D' + // move to the start of the line
-           '\033[' + (rowWidth - str.length) + 'C' + // align right
-           '\033[' + color + 'm' + str + '\033[39m' +
-           '\033[u'; // restore current position
-  } else {
-    return '\033[' + color + 'm' + str + '\033[39m';
-  }
-}
+    toLog.message = util.format(...messages);
+    console._trace = false;
+
+    return fn.call(
+      this,
+      console.traceOptions.json ? JSON.stringify(toLog) : console.stringFormat(toLog)
+    );
+  };
+});
+
+console.stringFormat = function(toLog) {
+  const { timestamp, level, callsite, message } = toLog;
+  let logLine = '';
+  if (timestamp) logLine += `[${timestamp}]`;
+  if (level) logLine += `[${level}]`;
+  if (callsite) logLine += `[${callsite}]`;
+  logLine += logLine.length ? ` ${message}` : message;
+  return logLine;
+};
 
 /**
  * Adds trace getter to the `console` object.
  *
  * @api public
  */
-
-function getter () {
+function getter() {
   this._trace = true;
   return this;
 }
 
 console.__defineGetter__('t', getter);
 console.__defineGetter__('traced', getter);
+
+/**
+ * Store custom options.
+ *
+ * @param {Object} options
+ * @api public
+ */
+module.exports = function(options) {
+  if (options) {
+    options.cwd = options.cwd || console.traceOptions.cwd;
+    console.traceOptions = options;
+  }
+};
