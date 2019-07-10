@@ -11,6 +11,9 @@
   },
   "license": "MIT",
   "author": "Remy Loubradou (https://github.com/lbdremy)",
+  "files": [
+    "superconsole.js"
+  ],
   "main": "superconsole.js",
   "dependencies": {
     "callsite": "^1.0.0"
