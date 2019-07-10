@@ -47,11 +47,7 @@ consoleMethods.forEach(function(name) {
         toLog.callsite = `${file}:${call.getLineNumber()}`;
       }
     }
-    const messages = [];
-    while (arguments.length) {
-      messages.push([].shift.call(arguments));
-    }
-    toLog.message = util.format(...messages);
+    toLog.message = util.format(...arguments);
     console._trace = false;
 
     return fn.call(
