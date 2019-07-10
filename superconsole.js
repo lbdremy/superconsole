@@ -34,11 +34,11 @@ consoleMethods.forEach(function(name) {
     }
     if (console._trace || console.traceOptions.callsite) {
       if (Buffer.isBuffer(arguments[0])) {
-        toLog.callsite = arguments[0].inspect();
+        arguments[0] = arguments[0].inspect();
       } else if (arguments[0] instanceof Error) {
-        if (arguments[0].stack) toLog.callsite = arguments[0].stack;
+        if (arguments[0].stack) arguments[0] = arguments[0].stack;
       } else if (typeof arguments[0] === 'object') {
-        toLog.callsite = arguments[0];
+        arguments[0] = arguments[0];
       }
       const _stack = stack();
       const call = _stack[1];
