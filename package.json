@@ -1,9 +1,18 @@
 {
-    "name": "superconsole"
-  , "version": "1.0.0"
-  , "description": "Prepends handies informations before your logs as you wish.(timestamp, callsite, loglevel)"
-  , "main": "./superconsole"
-  , "dependencies": {
-      "callsite": "~1.0.0"
-    }
+  "name": "superconsole",
+  "version": "1.0.0",
+  "description": "Prepends handy information before your logs as you wish (timestamp, callsite, loglevel).",
+  "bugs": {
+    "url": "https://github.com/lbdremy/superconsole/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lbdremy/superconsole.git"
+  },
+  "license": "MIT",
+  "author": "Remy Loubradou (https://github.com/lbdremy)",
+  "main": "superconsole.js",
+  "dependencies": {
+    "callsite": "^1.0.0"
+  }
 }
